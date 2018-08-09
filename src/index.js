@@ -4,6 +4,7 @@ import * as util from './util';
  * a very simple router for the **demo** of [weui](https://github.com/weui/weui)
  */
 let hashchangeTime = 0;
+
 class Router {
 
     // default option
@@ -60,8 +61,11 @@ class Router {
 
         const hash = util.getHash(location.href);
         const route = util.getRoute(this._routes, hash);
-        this.go(route ? hash : this._default);
-
+        if (route) {
+            this.go(hash);
+        }else {
+            location.hash = "#"+this._default;
+        }
         return this;
     }
 
@@ -106,7 +110,7 @@ class Router {
     go(url, isBack = false) {
         hashchangeTime++;
         const route = util.getRoute(this._routes, url);
-        const enterUrl = hashchangeTime+"_"+url;
+        const enterUrl = hashchangeTime + "_" + url;
         if (route) {
             const leave = (hasChildren) => {
                 // if have child already, then remove it
@@ -129,8 +133,8 @@ class Router {
 
             const enter = (hasChildren, html) => {
                 let node = document.createElement('div');
-                let currUrl = hashchangeTime+"_"+util.getHash(location.href);
-                if(currUrl !== enterUrl)return;
+                let currUrl = hashchangeTime + "_" + util.getHash(location.href);
+                if (currUrl !== enterUrl) return;
 
                 // add class name
                 if (route.className) {

@@ -68,7 +68,7 @@
 	    leaveTimeout: 300
 	});
 
-	router.push(_list2.default).push(_article2.default).setDefault('/').init();
+	router.push(_list2.default).push(_article2.default).setDefault('/list').init();
 
 /***/ }),
 /* 1 */
@@ -164,8 +164,11 @@
 
 	            var hash = util.getHash(location.href);
 	            var route = util.getRoute(this._routes, hash);
-	            this.go(route ? hash : this._default);
-
+	            if (route) {
+	                this.go(hash);
+	            } else {
+	                location.hash = "#" + this._default;
+	            }
 	            return this;
 	        }
 
@@ -1213,7 +1216,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = {
-	    url: '/',
+	    url: '/list',
 	    render: function render(callback) {
 
 	        var data = _dataManager2.default.getData('data');

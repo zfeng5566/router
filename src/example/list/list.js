@@ -5,7 +5,7 @@ import dataManager from '../lib/dataManager';
 import tpl from 'raw!./list.html';
 
 export default {
-    url: '/',
+    url: '/list',
     render: function (callback) {
 
         const data = dataManager.getData('data');

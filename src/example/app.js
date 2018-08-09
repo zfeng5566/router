@@ -11,5 +11,5 @@ const router = new Router({
 
 router.push(list)
     .push(article)
-    .setDefault('/')
+    .setDefault('/list')
     .init();
