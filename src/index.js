@@ -3,6 +3,7 @@ import * as util from './util';
 /**
  * a very simple router for the **demo** of [weui](https://github.com/weui/weui)
  */
+let hashchangeTime = 0;
 class Router {
 
     // default option
@@ -45,7 +46,7 @@ class Router {
             const old_hash = util.getHash(event.oldURL);
             const hash = util.getHash(event.newURL);
             // fix '/' repeat see https://github.com/progrape/router/issues/21
-            if(old_hash === hash) return;   
+            if (old_hash === hash) return;
             const state = history.state || {};
 
             this.go(hash, state._index <= this._index);
@@ -103,9 +104,10 @@ class Router {
      * @returns {Router}
      */
     go(url, isBack = false) {
+        hashchangeTime++;
         const route = util.getRoute(this._routes, url);
+        const enterUrl = hashchangeTime+"_"+url;
         if (route) {
-
             const leave = (hasChildren) => {
                 // if have child already, then remove it
                 if (hasChildren) {
@@ -127,6 +129,8 @@ class Router {
 
             const enter = (hasChildren, html) => {
                 let node = document.createElement('div');
+                let currUrl = hashchangeTime+"_"+util.getHash(location.href);
+                if(currUrl !== enterUrl)return;
 
                 // add class name
                 if (route.className) {
@@ -156,7 +160,6 @@ class Router {
                 } catch (e) {
 
                 }
-
                 if (typeof route.bind === 'function'/* && !route.__isBind*/) {
                     route.bind.call(node);
                     //route.__isBind = true;

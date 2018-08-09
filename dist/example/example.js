@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -70,9 +70,9 @@
 
 	router.push(_list2.default).push(_article2.default).setDefault('/').init();
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -95,6 +95,8 @@
 	/**
 	 * a very simple router for the **demo** of [weui](https://github.com/weui/weui)
 	 */
+	var hashchangeTime = 0;
+
 	var Router = function () {
 
 	    /**
@@ -219,98 +221,96 @@
 	        value: function go(url) {
 	            var _this2 = this;
 
-	            var isBack = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+	            var isBack = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+	            hashchangeTime++;
 	            var route = util.getRoute(this._routes, url);
+	            var enterUrl = hashchangeTime + "_" + url;
 	            if (route) {
-	                (function () {
-
-	                    var leave = function leave(hasChildren) {
-	                        // if have child already, then remove it
-	                        if (hasChildren) {
-	                            (function () {
-	                                var child = _this2._$container.children[0];
-	                                if (isBack) {
-	                                    child.classList.add(_this2._options.leave);
-	                                }
-
-	                                if (_this2._options.leaveTimeout > 0) {
-	                                    setTimeout(function () {
-	                                        child.parentNode.removeChild(child);
-	                                    }, _this2._options.leaveTimeout);
-	                                } else {
-	                                    child.parentNode.removeChild(child);
-	                                }
-	                            })();
-	                        }
-	                    };
-
-	                    var enter = function enter(hasChildren, html) {
-	                        var node = document.createElement('div');
-
-	                        // add class name
-	                        if (route.className) {
-	                            node.classList.add(route.className);
+	                var leave = function leave(hasChildren) {
+	                    // if have child already, then remove it
+	                    if (hasChildren) {
+	                        var child = _this2._$container.children[0];
+	                        if (isBack) {
+	                            child.classList.add(_this2._options.leave);
 	                        }
 
-	                        node.innerHTML = html;
-	                        _this2._$container.appendChild(node);
-	                        // add class
-	                        if (!isBack && _this2._options.enter && hasChildren) {
-	                            node.classList.add(_this2._options.enter);
-	                        }
-
-	                        if (_this2._options.enterTimeout > 0) {
+	                        if (_this2._options.leaveTimeout > 0) {
 	                            setTimeout(function () {
-	                                node.classList.remove(_this2._options.enter);
-	                            }, _this2._options.enterTimeout);
+	                                child.parentNode.removeChild(child);
+	                            }, _this2._options.leaveTimeout);
 	                        } else {
-	                            node.classList.remove(_this2._options.enter);
+	                            child.parentNode.removeChild(child);
 	                        }
-
-	                        location.hash = '#' + url;
-	                        try {
-	                            isBack ? _this2._index-- : _this2._index++;
-	                            history.replaceState && history.replaceState({ _index: _this2._index }, '', location.href);
-	                        } catch (e) {}
-
-	                        if (typeof route.bind === 'function' /* && !route.__isBind*/) {
-	                                route.bind.call(node);
-	                                //route.__isBind = true;
-	                            }
-	                    };
-
-	                    var hasChildren = util.hasChildren(_this2._$container);
-
-	                    // pop current page
-	                    leave(hasChildren);
-
-	                    // callback
-	                    var callback = function callback(err) {
-	                        var html = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-	                        if (err) {
-	                            throw err;
-	                        }
-
-	                        // push next page
-	                        enter(hasChildren, html);
-	                    };
-
-	                    var res = route.render(callback);
-	                    // promise
-	                    if (res && typeof res.then === 'function') {
-	                        res.then(function (html) {
-	                            callback(null, html);
-	                        }, callback);
 	                    }
-	                    // synchronous
-	                    else if (route.render.length === 0) {
-	                            callback(null, res);
+	                };
+
+	                var enter = function enter(hasChildren, html) {
+	                    var node = document.createElement('div');
+	                    var currUrl = hashchangeTime + "_" + util.getHash(location.href);
+	                    if (currUrl !== enterUrl) return;
+
+	                    // add class name
+	                    if (route.className) {
+	                        node.classList.add(route.className);
+	                    }
+
+	                    node.innerHTML = html;
+	                    _this2._$container.appendChild(node);
+	                    // add class
+	                    if (!isBack && _this2._options.enter && hasChildren) {
+	                        node.classList.add(_this2._options.enter);
+	                    }
+
+	                    if (_this2._options.enterTimeout > 0) {
+	                        setTimeout(function () {
+	                            node.classList.remove(_this2._options.enter);
+	                        }, _this2._options.enterTimeout);
+	                    } else {
+	                        node.classList.remove(_this2._options.enter);
+	                    }
+
+	                    location.hash = '#' + url;
+	                    try {
+	                        isBack ? _this2._index-- : _this2._index++;
+	                        history.replaceState && history.replaceState({ _index: _this2._index }, '', location.href);
+	                    } catch (e) {}
+	                    if (typeof route.bind === 'function' /* && !route.__isBind*/) {
+	                            route.bind.call(node);
+	                            //route.__isBind = true;
 	                        }
-	                        // callback
-	                        else {}
-	                })();
+	                };
+
+	                var hasChildren = util.hasChildren(this._$container);
+
+	                // pop current page
+	                leave(hasChildren);
+
+	                // callback
+	                var callback = function callback(err) {
+	                    var html = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+	                    if (err) {
+	                        throw err;
+	                    }
+
+	                    // push next page
+	                    enter(hasChildren, html);
+	                };
+
+	                var res = route.render(callback);
+	                // promise
+	                if (res && typeof res.then === 'function') {
+	                    res.then(function (html) {
+	                        callback(null, html);
+	                    }, callback);
+	                }
+	                // synchronous
+	                else if (route.render.length === 0) {
+	                        callback(null, res);
+	                    }
+	                    // callback
+	                    else {}
 	            } else {
 	                throw new Error('url ' + url + ' was not found');
 	            }
@@ -324,9 +324,9 @@
 	exports.default = Router;
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -393,9 +393,9 @@
 	 */
 	function noop() {}
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var isarray = __webpack_require__(4)
 
@@ -429,14 +429,16 @@
 	/**
 	 * Parse a string for the raw tokens.
 	 *
-	 * @param  {string} str
+	 * @param  {string}  str
+	 * @param  {Object=} options
 	 * @return {!Array}
 	 */
-	function parse (str) {
+	function parse (str, options) {
 	  var tokens = []
 	  var key = 0
 	  var index = 0
 	  var path = ''
+	  var defaultDelimiter = options && options.delimiter || '/'
 	  var res
 
 	  while ((res = PATH_REGEXP.exec(str)) != null) {
@@ -469,8 +471,8 @@
 	    var partial = prefix != null && next != null && next !== prefix
 	    var repeat = modifier === '+' || modifier === '*'
 	    var optional = modifier === '?' || modifier === '*'
-	    var delimiter = res[2] || '/'
-	    var pattern = capture || group || (asterisk ? '.*' : '[^' + delimiter + ']+?')
+	    var delimiter = res[2] || defaultDelimiter
+	    var pattern = capture || group
 
 	    tokens.push({
 	      name: name || key++,
@@ -480,7 +482,7 @@
 	      repeat: repeat,
 	      partial: partial,
 	      asterisk: !!asterisk,
-	      pattern: escapeGroup(pattern)
+	      pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
 	    })
 	  }
 
@@ -501,10 +503,11 @@
 	 * Compile a string to a template function for the path.
 	 *
 	 * @param  {string}             str
+	 * @param  {Object=}            options
 	 * @return {!function(Object=, Object=)}
 	 */
-	function compile (str) {
-	  return tokensToFunction(parse(str))
+	function compile (str, options) {
+	  return tokensToFunction(parse(str, options))
 	}
 
 	/**
@@ -715,34 +718,28 @@
 	 * @return {!RegExp}
 	 */
 	function stringToRegexp (path, keys, options) {
-	  var tokens = parse(path)
-	  var re = tokensToRegExp(tokens, options)
-
-	  // Attach keys back to the regexp.
-	  for (var i = 0; i < tokens.length; i++) {
-	    if (typeof tokens[i] !== 'string') {
-	      keys.push(tokens[i])
-	    }
-	  }
-
-	  return attachKeys(re, keys)
+	  return tokensToRegExp(parse(path, options), keys, options)
 	}
 
 	/**
 	 * Expose a function for taking tokens and returning a RegExp.
 	 *
-	 * @param  {!Array}  tokens
-	 * @param  {Object=} options
+	 * @param  {!Array}          tokens
+	 * @param  {(Array|Object)=} keys
+	 * @param  {Object=}         options
 	 * @return {!RegExp}
 	 */
-	function tokensToRegExp (tokens, options) {
+	function tokensToRegExp (tokens, keys, options) {
+	  if (!isarray(keys)) {
+	    options = /** @type {!Object} */ (keys || options)
+	    keys = []
+	  }
+
 	  options = options || {}
 
 	  var strict = options.strict
 	  var end = options.end !== false
 	  var route = ''
-	  var lastToken = tokens[tokens.length - 1]
-	  var endsWithSlash = typeof lastToken === 'string' && /\/$/.test(lastToken)
 
 	  // Iterate over the tokens and create our regexp string.
 	  for (var i = 0; i < tokens.length; i++) {
@@ -753,6 +750,8 @@
 	    } else {
 	      var prefix = escapeString(token.prefix)
 	      var capture = '(?:' + token.pattern + ')'
+
+	      keys.push(token)
 
 	      if (token.repeat) {
 	        capture += '(?:' + prefix + capture + ')*'
@@ -772,12 +771,15 @@
 	    }
 	  }
 
+	  var delimiter = escapeString(options.delimiter || '/')
+	  var endsWithDelimiter = route.slice(-delimiter.length) === delimiter
+
 	  // In non-strict mode we allow a slash at the end of match. If the path to
 	  // match already ends with a slash, we remove it for consistency. The slash
 	  // is valid at the end of a path match, not in the middle. This is important
 	  // in non-ending mode, where "/test/" shouldn't match "/test//route".
 	  if (!strict) {
-	    route = (endsWithSlash ? route.slice(0, -2) : route) + '(?:\\/(?=$))?'
+	    route = (endsWithDelimiter ? route.slice(0, -delimiter.length) : route) + '(?:' + delimiter + '(?=$))?'
 	  }
 
 	  if (end) {
@@ -785,10 +787,10 @@
 	  } else {
 	    // In non-ending mode, we need the capturing groups to match as much as
 	    // possible by using a positive lookahead to the end or next path segment.
-	    route += strict && endsWithSlash ? '' : '(?=\\/|$)'
+	    route += strict && endsWithDelimiter ? '' : '(?=' + delimiter + '|$)'
 	  }
 
-	  return new RegExp('^' + route, flags(options))
+	  return attachKeys(new RegExp('^' + route, flags(options)), keys)
 	}
 
 	/**
@@ -804,14 +806,12 @@
 	 * @return {!RegExp}
 	 */
 	function pathToRegexp (path, keys, options) {
-	  keys = keys || []
-
 	  if (!isarray(keys)) {
-	    options = /** @type {!Object} */ (keys)
+	    options = /** @type {!Object} */ (keys || options)
 	    keys = []
-	  } else if (!options) {
-	    options = {}
 	  }
+
+	  options = options || {}
 
 	  if (path instanceof RegExp) {
 	    return regexpToRegexp(path, /** @type {!Array} */ (keys))
@@ -825,18 +825,18 @@
 	}
 
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = Array.isArray || function (arr) {
 	  return Object.prototype.toString.call(arr) == '[object Array]';
 	};
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
@@ -850,8 +850,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./../../node_modules/postcss-loader/index.js!./../../node_modules/less-loader/index.js!./app.less", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./../../node_modules/postcss-loader/index.js!./../../node_modules/less-loader/index.js!./app.less");
+			module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js!../../node_modules/less-loader/index.js!./app.less", function() {
+				var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/postcss-loader/index.js!../../node_modules/less-loader/index.js!./app.less");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -860,23 +860,23 @@
 		module.hot.dispose(function() { update(); });
 	}
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(7)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n}\nhtml,\nbody {\n  height: 100%;\n}\nbody {\n  overflow-x: hidden;\n}\n.container {\n  height: 100%;\n  overflow-y: auto;\n  -webkit-overflow-scrolling: touch;\n}\n.container > div {\n  background-color: #fff;\n}\n@-webkit-keyframes slideIn {\n  from {\n    -webkit-transform: translate3d(100%, 0, 0);\n            transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n  to {\n    -webkit-transform: translate3d(0, 0, 0);\n            transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n}\n@keyframes slideIn {\n  from {\n    -webkit-transform: translate3d(100%, 0, 0);\n            transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n  to {\n    -webkit-transform: translate3d(0, 0, 0);\n            transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n}\n@-webkit-keyframes slideOut {\n  from {\n    -webkit-transform: translate3d(0, 0, 0);\n            transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n  to {\n    -webkit-transform: translate3d(100%, 0, 0);\n            transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n}\n@keyframes slideOut {\n  from {\n    -webkit-transform: translate3d(0, 0, 0);\n            transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n  to {\n    -webkit-transform: translate3d(100%, 0, 0);\n            transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n}\n.enter,\n.leave {\n  position: absolute;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 1;\n}\n.enter {\n  -webkit-animation: slideIn .2s forwards;\n          animation: slideIn .2s forwards;\n}\n.leave {\n  -webkit-animation: slideOut .25s forwards;\n          animation: slideOut .25s forwards;\n}\n", ""]);
+	exports.push([module.id, "* {\n  margin: 0;\n  padding: 0;\n}\nhtml,\nbody {\n  height: 100%;\n}\nbody {\n  overflow-x: hidden;\n}\n.container {\n  height: 100%;\n  overflow-y: auto;\n  -webkit-overflow-scrolling: touch;\n}\n.container > div {\n  background-color: #fff;\n}\n@keyframes slideIn {\n  from {\n    transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n  to {\n    transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n}\n@keyframes slideOut {\n  from {\n    transform: translate3d(0, 0, 0);\n    opacity: 1;\n  }\n  to {\n    transform: translate3d(100%, 0, 0);\n    opacity: 0;\n  }\n}\n.enter,\n.leave {\n  position: absolute;\n  top: 0;\n  right: 0;\n  bottom: 0;\n  left: 0;\n  z-index: 1;\n}\n.enter {\n  animation: slideIn .2s forwards;\n}\n.leave {\n  animation: slideOut .25s forwards;\n}\n", ""]);
 
 	// exports
 
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -930,9 +930,9 @@
 	};
 
 
-/***/ },
+/***/ }),
 /* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -947,7 +947,7 @@
 			};
 		},
 		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+			return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
 		}),
 		getHeadElement = memoize(function () {
 			return document.head || document.getElementsByTagName("head")[0];
@@ -1182,9 +1182,9 @@
 	}
 
 
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function($) {'use strict';
 
@@ -1237,9 +1237,9 @@
 	module.exports = exports['default'];
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	 * jQuery JavaScript Library v2.2.4
@@ -11057,9 +11057,9 @@
 	}));
 
 
-/***/ },
+/***/ }),
 /* 11 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function($) {/*!
 	 * WeUI.js v0.2.1 (https://github.com/progrape/weui.js)
@@ -11696,9 +11696,9 @@
 	})($);
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
-/***/ },
+/***/ }),
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	 * artTemplate - Template Engine
@@ -11761,7 +11761,7 @@
 	 * @return  {String}    渲染好的字符串
 	 */
 	template.render = function (source, options) {
-	    return compile(source, options);
+	    return compile(source)(options);
 	};
 
 
@@ -12442,9 +12442,9 @@
 
 	})();
 
-/***/ },
+/***/ }),
 /* 13 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 
@@ -12479,9 +12479,9 @@
 	}];
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 14 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	"use strict";
 
@@ -12511,15 +12511,15 @@
 	};
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 15 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
-	module.exports = "<div class=\"weui_panel weui_panel_access\">\n    <div class=\"weui_panel_hd\">图文组合列表</div>\n    <div class=\"weui_panel_bd\">\n        {{each list as item i}}\n        <a href=\"#/article/{{item.id}}\" class=\"weui_media_box weui_media_appmsg\">\n            <div class=\"weui_media_hd\">\n                <img src=\"{{item.cover}}\" alt=\"\" class=\"weui_media_appmsg_thumb\">\n            </div>\n            <div class=\"weui_media_bd\">\n                <h4 class=\"weui_media_title\">{{item.title}}</h4>\n                <p class=\"weui_media_desc\">{{item.summary}}</p>\n            </div>\n        </a>\n        {{/each}}\n    </div>\n</div>"
+	module.exports = "<div class=\"weui_panel weui_panel_access\">\r\n    <div class=\"weui_panel_hd\">图文组合列表</div>\r\n    <div class=\"weui_panel_bd\">\r\n        {{each list as item i}}\r\n        <a href=\"#/article/{{item.id}}\" class=\"weui_media_box weui_media_appmsg\">\r\n            <div class=\"weui_media_hd\">\r\n                <img src=\"{{item.cover}}\" alt=\"\" class=\"weui_media_appmsg_thumb\">\r\n            </div>\r\n            <div class=\"weui_media_bd\">\r\n                <h4 class=\"weui_media_title\">{{item.title}}</h4>\r\n                <p class=\"weui_media_desc\">{{item.summary}}</p>\r\n            </div>\r\n        </a>\r\n        {{/each}}\r\n    </div>\r\n</div>"
 
-/***/ },
+/***/ }),
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 
@@ -12593,9 +12593,9 @@
 	};
 	module.exports = exports['default'];
 
-/***/ },
+/***/ }),
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*!
 	 * iSwiper 1.4.2 (https://github.com/wechatui/swiper.git)
@@ -12941,15 +12941,15 @@
 
 	}));
 
-/***/ },
+/***/ }),
 /* 18 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
-	module.exports = "<div class=\"swiper\">\n    {{each items as item i}}\n    <div class=\"item\" style=\"background: url('{{item}}'); background-size: cover; -webkit-background-size: cover;\">\n\n    </div>\n    {{/each}}\n</div>\n<article class=\"weui_article\">\n    <section>\n        <h2 class=\"title\">{{article.title}}</h2>\n        <section>\n            <p>{{article.summary}}</p>\n        </section>\n        <section>\n            <p>{{article.summary}}</p>\n        </section>\n    </section>\n</article>"
+	module.exports = "<div class=\"swiper\">\r\n    {{each items as item i}}\r\n    <div class=\"item\" style=\"background: url('{{item}}'); background-size: cover; -webkit-background-size: cover;\">\r\n\r\n    </div>\r\n    {{/each}}\r\n</div>\r\n<article class=\"weui_article\">\r\n    <section>\r\n        <h2 class=\"title\">{{article.title}}</h2>\r\n        <section>\r\n            <p>{{article.summary}}</p>\r\n        </section>\r\n        <section>\r\n            <p>{{article.summary}}</p>\r\n        </section>\r\n    </section>\r\n</article>"
 
-/***/ },
+/***/ }),
 /* 19 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
@@ -12963,8 +12963,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/postcss-loader/index.js!./../../../node_modules/less-loader/index.js!./article.less", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/postcss-loader/index.js!./../../../node_modules/less-loader/index.js!./article.less");
+			module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js!../../../node_modules/less-loader/index.js!./article.less", function() {
+				var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/postcss-loader/index.js!../../../node_modules/less-loader/index.js!./article.less");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -12973,43 +12973,43 @@
 		module.hot.dispose(function() { update(); });
 	}
 
-/***/ },
+/***/ }),
 /* 20 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(7)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".swiper {\n  height: 200px;\n  overflow: hidden;\n  -webkit-transition: all 0.3s ease;\n  transition: all 0.3s ease;\n}\n.item {\n  height: 100%;\n  background-position: center center;\n  background-size: cover;\n  position: relative;\n  overflow: hidden;\n  float: left;\n}\n.item.active .animated {\n  -webkit-animation-fill-mode: both;\n          animation-fill-mode: both;\n  opacity: 1;\n}\n.item:not(.active) .animated {\n  -webkit-animation: none;\n          animation: none;\n  opacity: 0;\n}\n", ""]);
+	exports.push([module.id, ".swiper {\n  height: 200px;\n  overflow: hidden;\n  transition: all 0.3s ease;\n}\n.item {\n  height: 100%;\n  background-position: center center;\n  background-size: cover;\n  position: relative;\n  overflow: hidden;\n  float: left;\n}\n.item.active .animated {\n  animation-fill-mode: both;\n  opacity: 1;\n}\n.item:not(.active) .animated {\n  animation: none;\n  opacity: 0;\n}\n", ""]);
 
 	// exports
 
 
-/***/ },
+/***/ }),
 /* 21 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "8d009c9d91ea14721eaff19d32237d40.png";
 
-/***/ },
+/***/ }),
 /* 22 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "b8506bdb1a762806f909f5c12cf8d92b.png";
 
-/***/ },
+/***/ }),
 /* 23 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "b87cd3b87e12ff32ce7c52b6c3a13945.png";
 
-/***/ },
+/***/ }),
 /* 24 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "47e04b2447b9170b0657988bf64d2126.png";
 
-/***/ }
+/***/ })
 /******/ ]);
